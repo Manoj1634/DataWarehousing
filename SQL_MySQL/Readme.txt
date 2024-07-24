@@ -1,4 +1,4 @@
-﻿Within the realm of SQL, we're also evaluating performance differences between Python and MySQL Workbench.
+## ﻿Within the realm of SQL, we're also evaluating performance differences between Python and MySQL Workbench.
 
 
 We used Python to export a CSV file to a MySQL server, importing the data and creating tables through Python scripts. We created two databases within the MySQL server: DW_Project1 (utilized for Python-based queries) and DW_Project (used for queries in MySQL Workbench).
