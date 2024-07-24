@@ -1,0 +1,319 @@
+﻿#1. Find Manufacturers with the Highest Number of Products:
+
+
+#Using the parent table:
+SET SESSION profiling = 1;
+SELECT Labeler_Name, COUNT(Product_Code) AS Total_Products
+FROM Drug_product_final
+GROUP BY Labeler_Name
+ORDER BY Total_Products DESC;
+SHOW PROFILES;
+
+
+#2.334sec
+
+
+#Using the child tables:
+SET SESSION profiling = 2;
+SELECT M.Labeler_Name, COUNT(D.Product_Code) AS Total_Products
+FROM Manufacturers M
+LEFT JOIN Drugs D ON M.ID = D.ID
+GROUP BY M.Labeler_Name
+ORDER BY Total_Products DESC;
+SHOW PROFILES;
+#5.605 sec
+
+
+#2. 
+#Retrieve the count of FDA application numbers associated with multiple product numbers. Display records where the count of associated product numbers for an FDA application number is greater than 1.
+
+
+#Using Parent Table:
+
+
+SET SESSION profiling = 3;
+SELECT FDA_Application_Number, COUNT(DISTINCT Product_Code) AS Associated_Product_Count
+FROM Drug_product_final
+GROUP BY FDA_Application_Number
+HAVING COUNT(DISTINCT Product_Code) > 1
+Order by Associated_Product_Count DESC;
+SHOW PROFILES;
+#13.82 sec
+
+
+#Using Child Table:
+SET SESSION profiling = 4;
+SELECT f.FDA_Application_Number, COUNT(DISTINCT d.Product_Code) AS Associated_Product_Count
+FROM FDA f
+JOIN Drugs d ON f.ID = d.ID
+GROUP BY f.FDA_Application_Number
+HAVING COUNT(DISTINCT d.Product_Code) > 1
+Order by Associated_Product_Count DESC;
+SHOW PROFILES;
+#14.135 sec
+
+
+
+
+#3. 
+#Find FDA Application Numbers Associated with Multiple Labelers:
+
+
+
+
+
+
+Using Parent table:
+SET SESSION profiling = 5;
+SELECT dp.FDA_Application_Number, COUNT(DISTINCT dp.Labeler_Code) AS Associated_Labelers
+FROM Drug_product_final dp
+GROUP BY dp.FDA_Application_Number
+HAVING COUNT(DISTINCT dp.Labeler_Code) > 1
+Order by Associated_Labelers DESC;
+SHOW PROFILES;
+#13.853 sec
+
+
+#Using Child Tables:
+SET SESSION profiling = 6;
+SELECT f.FDA_Application_Number, COUNT(DISTINCT m.Labeler_Code) AS Associated_Labelers
+FROM FDA f
+JOIN Manufacturers m ON f.ID = m.ID
+GROUP BY f.FDA_Application_Number
+HAVING COUNT(DISTINCT m.Labeler_Code) > 1
+Order by Associated_Labelers DESC;
+SHOW PROFILES;
+#11.994 sec
+
+
+
+
+
+
+#Fetch time is less when we use “Order by”
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#4.
+# Counting Products by Manufacturer for a Specific Drug Category:
+
+
+#Using Parent table:
+SET SESSION profiling = 7;
+SELECT dp.Labeler_Name, COUNT(dp.Product_Code) AS Product_Count
+FROM Drug_product_final dp
+WHERE dp.Drug_Category = 'S'
+GROUP BY dp.Labeler_Name
+Order by Product_Count DESC;
+SHOW PROFILES;
+#0.698s
+
+
+#Using Child Table:
+SET SESSION profiling = 8;
+SELECT m.Labeler_Name, COUNT(d.Product_Code) AS Product_Count
+FROM Manufacturers m
+JOIN Drugs d ON m.ID = d.ID
+WHERE d.Drug_Category = 'S'
+GROUP BY m.Labeler_Name
+Order by Product_Count DESC;
+SHOW PROFILES;
+#3.076s
+
+
+
+
+#5.
+ #show only those manufacturers with more than 5 products and more than 3 FDA applications.
+
+
+Using Parent table:
+SET SESSION profiling = 9;
+SELECT Labeler_Name, COUNT(Product_Code) AS Product_Count, COUNT(FDA_Application_Number) AS FDA_Count
+FROM Drug_product_final
+GROUP BY Labeler_Name
+HAVING Product_Count > 5 AND FDA_Count > 3
+Order by Product_Count Desc;
+SHOW PROFILES;
+#2.377s
+
+
+ #Using Child Table:
+
+
+SET SESSION profiling = 10;
+SELECT m.Labeler_Name, COUNT(d.Product_Code) AS Product_Count, COUNT(f.FDA_Application_Number) AS FDA_Count
+FROM Manufacturers m
+LEFT JOIN Drugs d ON m.ID = d.ID
+LEFT JOIN FDA f ON m.ID = f.ID
+GROUP BY m.Labeler_Name
+HAVING Product_Count > 5 AND FDA_Count > 3
+Order by Product_Count DESC;
+SHOW PROFILES;
+#6.219s
+
+
+#6. 
+#Generate a result set that combines the counts for specific drug categories, manufacturers for a drug type indicator, and product counts by year and quarter. 
+
+
+#Parent table:
+SET SESSION profiling = 11;
+SELECT 
+    CASE 
+        WHEN Drug_Category IN ('S', 'I') THEN Drug_Category 
+        ELSE NULL 
+    END AS Drug_Category,
+    COUNT(*) AS Category_Count,
+    Drug_Type_Indicator,
+    COUNT(DISTINCT Labeler_Name) AS Manufacturer_Count,
+    Year,
+    Quarter,
+    COUNT(*) AS Product_Count
+FROM Drug_product_final
+GROUP BY Drug_Category, Drug_Type_Indicator, Year, Quarter
+ORDER BY Drug_Category, Drug_Type_Indicator, Year, Quarter;
+SHOW PROFILES;
+#13.104 S
+
+
+#Child Table:
+SET SESSION profiling = 12;
+SELECT 
+    d.Drug_Category AS Drug_Category,
+    COUNT(*) AS Category_Count,
+    d.Drug_Type_Indicator AS Drug_Type_Indicator,
+    COUNT(DISTINCT m.Labeler_Name) AS Manufacturer_Count,
+    m.Year AS Year,
+    m.Quarter AS Quarter,
+    COUNT(*) AS Product_Count
+FROM Drugs d
+JOIN Manufacturers m ON d.ID = m.ID
+GROUP BY d.Drug_Category, d.Drug_Type_Indicator, m.Year, m.Quarter
+ORDER BY d.Drug_Category, d.Drug_Type_Indicator, m.Year, m.Quarter;
+SHOW PROFILES;
+#12.437s
+
+
+#7. 
+#calculates the counts of drugs, manufacturers, and distinct FDA application numbers associated with each drug category based on the shared 'ID'.
+
+
+#Parent tables:
+SET SESSION profiling = 13;
+SELECT 
+    Drug_Category,
+    COUNT(*) AS Drug_Count,
+    COUNT(DISTINCT Labeler_Code) AS Manufacturer_Count,
+    COUNT(DISTINCT FDA_Application_Number) AS FDA_Application_Count
+FROM Drug_product_final
+GROUP BY Drug_Category;
+SHOW PROFILES;
+#20.4s
+
+
+
+
+#Child tables:
+SET SESSION profiling = 14;
+SELECT 
+    d.Drug_Category AS Drug_Category,
+    COUNT(*) AS Drug_Count,
+    COUNT(DISTINCT m.ID) AS Manufacturer_Count,
+    COUNT(DISTINCT f.ID) AS FDA_Application_Count
+FROM Drugs d
+LEFT JOIN Manufacturers m ON d.ID = m.ID
+LEFT JOIN FDA f ON d.ID = f.ID
+GROUP BY d.Drug_Category;
+SHOW PROFILES;
+#15.27 sec
+
+
+
+
+
+
+#Lets give some task with searching to SQL and find whether it takes more time or not.
+
+
+#8. 
+
+
+#This query filters the Manufacturers table to include only entries for the year 2023 and the 3rd quarter, then performs the counts for each drug category based on these filtered Manufacturers along with the Drugs and FDA tables. 
+
+
+
+
+#Parent tables:
+SET SESSION profiling = 15;
+SELECT 
+    Drug_Category,
+    COUNT(*) AS Drug_Count,
+    COUNT(DISTINCT Labeler_Code) AS Manufacturer_Count,
+    COUNT(DISTINCT FDA_Application_Number) AS FDA_Application_Count
+FROM Drug_product_final
+WHERE Year = 2023 AND Quarter = 3
+GROUP BY Drug_Category;
+SHOW PROFILES;
+#0.70s
+
+
+#Child Tables:
+SET SESSION profiling = 16;
+SELECT 
+    d.Drug_Category AS Drug_Category,
+    COUNT(*) AS Drug_Count,
+    COUNT(DISTINCT m.ID) AS Manufacturer_Count,
+    COUNT(DISTINCT f.ID) AS FDA_Application_Count
+FROM Drugs d
+LEFT JOIN Manufacturers m ON d.ID = m.ID
+LEFT JOIN FDA f ON d.ID = f.ID
+WHERE m.Year = 2023 AND m.Quarter = 3
+GROUP BY d.Drug_Category;
+SHOW PROFILES;
+#0.836s
+
+
+#9.
+#Update labeler name 'ELI LILLY AND COMPANY with Eli
+Parent table
+SET SESSION profiling = 17;
+UPDATE Drug_product_final
+SET Labeler_Name = 'Eli'
+WHERE Labeler_Name = 'ELI LILLY AND COMPANY'
+SHOW PROFILES;
+
+
+
+
+#0.0011 seconds.
+#Child tables
+SET SESSION profiling = 18;
+UPDATE Manufacturers
+SET Labeler_Name = 'Eli'
+WHERE Labeler_Name = 'ELI LILLY AND COMPANY'
+SHOW PROFILES;
+
+# 0.0006 seconds
+
+
+#10 Delete table name:
+DROP TABLE table_name Drug_product_final1;
+#0.0002 seconds.
+Drop table Drugs;
+#0.0035 seconds.
+Drop table FDA;
+# 0.0002 seconds.
+Drop table Manufacturers;
+#0.0002 seconds.

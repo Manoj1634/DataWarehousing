@@ -1,0 +1,74 @@
+﻿Table name: Drug_product_final
+
+
+Drug_product_final (
+    ID INT,
+    Year INT,
+    Quarter INT,
+    Labeler_Name VARCHAR(255),
+    NDC VARCHAR(255),
+    Labeler_Code INT,
+    Product_Code INT,
+    Package_Size_Code INT,
+    Drug_Category VARCHAR(255),
+    Drug_Type_Indicator INT,
+    Unit_Type VARCHAR(255),
+    Units_Per_Pkg_Size DECIMAL(18, 3),
+    FDA_Therapeutic_Equivalence_Code VARCHAR(255),
+    FDA_Product_Name VARCHAR(255),
+    Clotting_Factor_Indicator VARCHAR(1),
+    Pediatric_Indicator VARCHAR(1),
+    COD_Status DECIMAL(5, 1),
+    FDA_Application_Number VARCHAR(255),
+    Line_Extension_Drug_Indicator VARCHAR(255)
+)
+
+
+
+Table name: Manufacturers
+
+Manufacturers (
+    ID INT,
+    Labeler_Name VARCHAR(255),
+    Labeler_Code INT,
+    NDC VARCHAR(255),
+    FDA_Application_Number VARCHAR(255),
+    Quarter INT,
+    Year INT,
+    FOREIGN KEY (ID) REFERENCES Drug_product_final(ID)
+)
+
+Table name: FDA
+
+
+FDA (
+    ID INT,
+    FDA_Application_Number VARCHAR(255),
+    FDA_Therapeutic_Equivalence_Code VARCHAR(255),
+    FDA_Product_Name VARCHAR(255)
+ FOREIGN KEY (ID) REFERENCES Drug_product_final(ID)
+
+
+);
+
+
+Table name: Drugs
+
+
+TABLE Drugs (
+    ID INT,
+    Product_Code INT,
+    Package_Size_Code INT,
+    Drug_Category VARCHAR(255),
+    Drug_Type_Indicator INT,
+    Unit_Type VARCHAR(255),
+    Units_Per_Pkg_Size DECIMAL(18, 3),
+    Line_Extension_Drug_Indicator VARCHAR(255),
+    COD_Status DECIMAL(5, 1),
+    NDC VARCHAR(255),
+    Clotting_Factor_Indicator VARCHAR(1),
+    Pediatric_Indicator VARCHAR(1)
+ FOREIGN KEY (ID) REFERENCES Drug_product_final(ID)
+
+
+);

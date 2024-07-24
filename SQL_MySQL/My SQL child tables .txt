@@ -1,0 +1,56 @@
+﻿CREATE TABLE Manufacturers1 (
+    ID INT,
+    Labeler_Name VARCHAR(255),
+    Labeler_Code INT,
+    NDC VARCHAR(255),
+    Quarter INT,
+    Year INT,
+    FOREIGN KEY (ID) REFERENCES Drug_product_final(ID)
+);
+
+
+INSERT INTO Manufacturers1 (ID, Labeler_Name, Labeler_Code, NDC, Quarter, Year)
+SELECT ID, Labeler_Name, Labeler_Code, NDC, Quarter, Year
+FROM Drug_product_final;
+
+
+
+
+CREATE TABLE Drugs (
+    ID INT,
+    Product_Code INT,
+    Package_Size_Code INT,
+    Drug_Category VARCHAR(255),
+    Drug_Type_Indicator INT,
+    Unit_Type VARCHAR(255),
+    Units_Per_Pkg_Size DECIMAL(18, 3),
+    Line_Extension_Drug_Indicator VARCHAR(255),
+    COD_Status DECIMAL(5, 1),
+    NDC VARCHAR(255),
+    Clotting_Factor_Indicator VARCHAR(1),
+    Pediatric_Indicator VARCHAR(1)
+ FOREIGN KEY (ID) REFERENCES Drug_product_final(ID)
+
+
+);
+
+
+
+
+INSERT INTO Drugs (ID, Product_Code, Package_Size_Code, Drug_Category, Drug_Type_Indicator, Unit_Type, Units_Per_Pkg_Size, Line_Extension_Drug_Indicator, COD_Status, NDC, Clotting_Factor_Indicator, Pediatric_Indicator)
+SELECT ID, Product_Code, Package_Size_Code, Drug_Category, Drug_Type_Indicator, Unit_Type, Units_Per_Pkg_Size, Line_Extension_Drug_Indicator, COD_Status, NDC, Clotting_Factor_Indicator, Pediatric_Indicator
+FROM Drug_product_final;
+
+
+CREATE TABLE FDA (
+    ID INT,
+    FDA_Application_Number VARCHAR(255),
+    FDA_Therapeutic_Equivalence_Code VARCHAR(255),
+    FDA_Product_Name VARCHAR(255)
+ FOREIGN KEY (ID) REFERENCES Drug_product_final(ID)
+
+
+);
+INSERT INTO FDA (ID, FDA_Application_Number, FDA_Therapeutic_Equivalence_Code, FDA_Product_Name)
+SELECT ID, FDA_Application_Number, FDA_Therapeutic_Equivalence_Code, FDA_Product_Name
+FROM Drug_product_final;
