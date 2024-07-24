@@ -13,7 +13,7 @@ We designed a Hierarchical Model to observe performance difference in performanc
 Queries were executed in both Python and MySQL Workbench to assess performance variations.
 
 
-*** The queries run in MySQL Workbench are documented in MySQL Queries.txt***
+*** The queries run in MySQL Workbench are documented in MySQL Queries.txt ***
 
 
 The SQL queries executed using Python are documented in the "Python Queries" file, while the Python scripts with SQL connectors used for creating databases and loading data onto the server are in the "Data Creation and Import" file.
